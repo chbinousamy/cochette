@@ -71,4 +71,5 @@ jobs:
       run: |
         npm install -g bats
         git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3_demo.git
+        export SNORT3_DAQ_DIR=/usr/local
         cd snort3_demo && ./run_test.sh /usr/local/snort
