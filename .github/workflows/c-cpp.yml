@@ -59,4 +59,4 @@ jobs:
       name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
       run: |
         git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3.git
-        cd snort3 && ./configure_cmake.sh && cd build && make -j && sudo make install && make clean
+        cd snort3 && ./configure_cmake.sh && cd build && make && sudo make install && make clean
