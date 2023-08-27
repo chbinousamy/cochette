@@ -41,12 +41,17 @@ jobs:
         git clone --recurse-submodules --branch=v2.1.ROLLING --depth=1 https://github.com/LuaJIT/LuaJIT.git
         cd LuaJIT && make && sudo make install
     -
-      name: ""
+      name: "libpcap, framework for low-level network monitoring"
       run: |
         git clone --recurse-submodules --branch=libpcap-1.10.4 --depth=1 https://github.com/the-tcpdump-group/libpcap
         cd libpcap && ./autogen.sh && ./configure && make && sudo make install
-      
-  
+    -
+      name: "PCRE2, Perl-Compatible Regular Expressions"
+      run: |
+        git clone --recurse-submodules --branch=pcre2-10.42 --depth=1 https://github.com/PCRE2Project/pcre2.git
+        cd pcre2 && ./autogen.sh && ./configure && make && sudo make install
+        
+        
   #build-snort:
   #  needs: build-dependencies
   #  runs-on: ubuntu-latest
