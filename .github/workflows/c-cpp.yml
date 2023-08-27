@@ -19,7 +19,7 @@ jobs:
       name: "Ubuntu update"
       run: |
         sudo apt update
-        sudo apt install check autopoint flex help2man
+        sudo apt install check autopoint flex help2man nodejs
     -
       name: "libDAQ, the Data AcQuisition Library"
       run: |
@@ -66,3 +66,9 @@ jobs:
       run: |
         git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3.git
         cd snort3 && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
+    -
+      name: "Run Demo Tests"
+      run: |
+        npm install -g bats
+        git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3_demo.git
+        cd snort3_demo && ./run_test.sh /usr/local/snort
