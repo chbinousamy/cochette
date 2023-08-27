@@ -24,8 +24,7 @@ jobs:
       name: "libDAQ, the Data AcQuisition Library"
       run: |
         git clone --recurse-submodules --branch=v3.0.12 --depth=1 https://github.com/snort3/libdaq.git
-        cd libdaq && ./bootstrap && ./configure --prefix=/target && make -j && sudo make install && make clean
-        ls && ls $pwd/target
+        cd libdaq && ./bootstrap && ./configure && make -j && sudo make install && make clean
     -
       name: "libdnet, the interface to several low-level networking routines"
       run: |
