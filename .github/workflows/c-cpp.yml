@@ -8,6 +8,11 @@ on:
 
 jobs:
   build-chain:
+    strategy:
+      matrix:
+        include:
+        - arch : amd64 
+        - arch : arm64
     runs-on: ubuntu-latest
     steps:
     -
