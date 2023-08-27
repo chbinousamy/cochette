@@ -16,14 +16,14 @@ jobs:
       name: "Ubuntu update"
       run: |
         sudo apt update
-        sudo apt install check
+        sudo apt install check autopoint
     -
-      name: "libDAQ, The Data AcQuisition Library"
+      name: "libDAQ, the Data AcQuisition Library"
       run: |
         git clone --recurse-submodules --branch=v3.0.12 --depth=1 https://github.com/snort3/libdaq.git
         cd libdaq && ./bootstrap && ./configure && make && sudo make install
     -
-      name: "libdnet, interface to several low-level networking routines"
+      name: "libdnet, the interface to several low-level networking routines"
       run: |
         git clone --recurse-submodules --branch=libdnet-1.16.4 --depth=1 https://github.com/ofalk/libdnet.git
         cd libdnet && ./configure && make && sudo make install
