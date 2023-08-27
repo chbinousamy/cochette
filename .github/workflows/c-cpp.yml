@@ -16,16 +16,10 @@ jobs:
         sudo apt update
         sudo apt install check autopoint flex help2man
     -
-      name: "libpcap, framework for low-level network monitoring"
-      run: |
-        git clone --recurse-submodules --branch=libpcap-1.10.4 --depth=1 https://github.com/the-tcpdump-group/libpcap
-        cd libpcap ## && ./build.sh && sudo make install
-        ./configure && make && make releasecheck && sudo make install
-    -
       name: "libDAQ, the Data AcQuisition Library"
       run: |
         git clone --recurse-submodules --branch=v3.0.12 --depth=1 https://github.com/snort3/libdaq.git
-        cd libdaq && ./bootstrap && ./configure && make && sudo make install
+        cd libdaq && ./bootstrap && ./configure && make -j && sudo make install
     -
       name: "libdnet, the interface to several low-level networking routines"
       run: |
@@ -47,11 +41,16 @@ jobs:
         git clone --recurse-submodules --branch=v2.1.ROLLING --depth=1 https://github.com/LuaJIT/LuaJIT.git
         cd LuaJIT && make && sudo make install
     -
+      name: "libpcap, framework for low-level network monitoring"
+      run: |
+        git clone --recurse-submodules --branch=libpcap-1.10.4 --depth=1 https://github.com/the-tcpdump-group/libpcap
+        cd libpcap ## && ./build.sh && sudo make install
+        ./configure && make && sudo make install
+    -
       name: "PCRE2, Perl-Compatible Regular Expressions"
       run: |
         git clone --recurse-submodules --branch=pcre2-10.42 --depth=1 https://github.com/PCRE2Project/pcre2.git
         cd pcre2 && ./autogen.sh && ./configure && make && sudo make install
-        
         
   #build-snort:
   #  needs: build-dependencies
@@ -61,4 +60,4 @@ jobs:
       name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
       run: |
         git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3.git
-        cd snort3 && ./configure_cmake.sh && make && make check && make distcheck
+        cd snort3 && ./configure_cmake.sh && cd build && make -j && make -j check && make -j distcheck
