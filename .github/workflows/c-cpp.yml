@@ -21,6 +21,12 @@ jobs:
         ./configure
         make
         sudo make install
+        cd ..
+        git clone --recurse-submodules --branch=libdnet-1.16.4 --depth=1 https://github.com/ofalk/libdnet.git
+        cd libdnet
+        ./configure
+        make
+        sudo make install
     - 
       uses: actions/checkout@v3
     - 
