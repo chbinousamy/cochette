@@ -20,7 +20,7 @@ jobs:
       run: |
         git clone --recurse-submodules --branch=libpcap-1.10.4 --depth=1 https://github.com/the-tcpdump-group/libpcap
         cd libpcap ## && ./build.sh && sudo make install
-        ./configure && make && make testprogs && sudo make install
+        ./configure && make && make releasecheck && sudo make install
     -
       name: "libDAQ, the Data AcQuisition Library"
       run: |
