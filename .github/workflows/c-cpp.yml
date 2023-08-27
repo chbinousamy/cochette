@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build-dependencies:
+  build-chain:
     runs-on: ubuntu-latest
     steps:
     -
@@ -35,8 +35,8 @@ jobs:
   #  needs: build-dependencies
   #  runs-on: ubuntu-latest
   #  steps:
-    -
-      uses: actions/checkout@v3
     - 
-      name: "Build snort3, the next generation Snort IPS (Intrusion Prevention System)"
-      run: ./configure_cmake.sh && make && make check && make distcheck
+      name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
+      run: |
+        git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3.git
+        ./configure_cmake.sh && make && make check && make distcheck
