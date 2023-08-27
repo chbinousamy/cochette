@@ -15,7 +15,7 @@ jobs:
     -
       name: "libDAQ"
       run: |
-        git clone --recurse-submodules --branch=v3.0.12 --depth=1 git@github.com:snort3/libdaq.git
+        git clone --recurse-submodules --branch=v3.0.12 --depth=1 https://github.com/snort3/libdaq.git
         ./bootstrap
         ./configure
         make
