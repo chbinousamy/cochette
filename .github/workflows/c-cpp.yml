@@ -35,6 +35,8 @@ jobs:
         git clone --recurse-submodules --branch=v3.0.12 --depth=1 https://github.com/snort3/libdaq.git
         WORKDIR=${{ github.workspace }}/libdaq
         cd $WORKDIR && ./bootstrap && ./configure && make -j && sudo make install && make clean
+        ln -s /usr/local/lib/libdaq.so.3 /lib/
+        ls -l /usr/local/lib/
     -
       name: "libdnet, the interface to several low-level networking routines"
       run: |
