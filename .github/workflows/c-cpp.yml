@@ -8,11 +8,7 @@ on:
 
 jobs:
   build-chain:
-    strategy:
-      matrix:
-        include:
-        - arch : amd64
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, ARM64]
     steps:
     -
         name: "Check Runner CPU, Mem, Drv, Net"
