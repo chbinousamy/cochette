@@ -67,16 +67,16 @@ jobs:
       run: |
         git clone --recurse-submodules --branch=pcre2-10.42 --depth=1 https://github.com/PCRE2Project/pcre2.git
         cd pcre2 && ./autogen.sh && ./configure && make -j && sudo make install && make clean
-        
-  #build-snort:
-  #  needs: build-dependencies
-  #  runs-on: ubuntu-latest
-  #  steps:
+    - 
+      name: "Snort++ Extras"
+      run: |
+        git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3_extra.git
+        cd snort3 && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
     - 
       name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
       run: |
         git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3.git
-        cd snort3 && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
+        cd snort3_extra && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
     -
       name: "Run Demo Tests"
       run: |
