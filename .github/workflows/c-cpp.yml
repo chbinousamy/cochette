@@ -76,7 +76,6 @@ jobs:
     - 
       name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
       run: |
-        ls -l /usr/local/lib/
         git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3.git
         cd snort3 && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
     -
@@ -84,5 +83,6 @@ jobs:
       run: |
         npm install -g bats
         git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3_demo.git
-        export SNORT3_DAQ_DIR=/usr/local/lib/daq
+        sudo ln -s /usr/local/lib /lib
+        ls -l /usr/local/lib/
         cd snort3_demo && ./run_test.sh /usr/local/snort
