@@ -32,6 +32,11 @@ jobs:
         sudo apt update
         sudo apt install check autopoint flex help2man nodejs
     -
+      name: "libpcap, framework for low-level network monitoring"
+      run: |
+        git clone --recurse-submodules --branch=libpcap-1.10.4 --depth=1 https://github.com/the-tcpdump-group/libpcap
+        cd libpcap && ./configure && make -j && sudo make install && make clean
+    -
       name: "libDAQ, the Data AcQuisition Library"
       run: |
         git clone --recurse-submodules --branch=v3.0.12 --depth=1 https://github.com/snort3/libdaq.git
@@ -57,11 +62,6 @@ jobs:
       run: |
         git clone --recurse-submodules --branch=v2.1.ROLLING --depth=1 https://github.com/LuaJIT/LuaJIT.git
         cd LuaJIT && make -j && sudo make install && make clean
-    -
-      name: "libpcap, framework for low-level network monitoring"
-      run: |
-        git clone --recurse-submodules --branch=libpcap-1.10.4 --depth=1 https://github.com/the-tcpdump-group/libpcap
-        cd libpcap && ./configure && make -j && sudo make install && make clean
     -
       name: "PCRE2, Perl-Compatible Regular Expressions"
       run: |
