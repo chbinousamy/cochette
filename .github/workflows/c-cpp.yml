@@ -37,8 +37,7 @@ jobs:
         git clone --recurse-submodules --branch=v3.0.12 --depth=1 https://github.com/snort3/libdaq.git
         WORKDIR=${{ github.workspace }}/libdaq
         cd $WORKDIR && ./bootstrap && ./configure && make -j && sudo make install && make clean
-        sudo ln -s /usr/local/lib /lib
-        ls -l /usr/local/lib/
+        sudo ln -s /usr/local/lib/libdaq.so.3 /lib/
     -
       name: "libdnet, the interface to several low-level networking routines"
       run: |
@@ -77,6 +76,7 @@ jobs:
     - 
       name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
       run: |
+        ls -l /usr/local/lib/
         git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3.git
         cd snort3 && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
     -
