@@ -18,6 +18,8 @@ jobs:
     -
         name: "Check Runner CPU, Mem, Drv, Net"
         run: |
+          echo "########## MACHINE ARCH ############"
+          uname -m
           echo "########### RUNNER CPU ############"
           lscpu
           echo "########### RUNNER RAM ############"
