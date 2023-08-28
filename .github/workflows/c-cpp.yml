@@ -37,7 +37,6 @@ jobs:
         git clone --recurse-submodules --branch=v3.0.12 --depth=1 https://github.com/snort3/libdaq.git
         WORKDIR=${{ github.workspace }}/libdaq
         cd $WORKDIR && ./bootstrap && ./configure && make -j && sudo make install && make clean
-        sudo ln -s /usr/local/lib/libdaq.so.3 /lib/
     -
       name: "libdnet, the interface to several low-level networking routines"
       run: |
@@ -83,6 +82,6 @@ jobs:
       run: |
         npm install -g bats
         git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3_demo.git
-        sudo ln -s /usr/local/lib /lib
-        ls -l /usr/local/lib/
+        export LD_LIBRARY_PATH=/usr/local/lib
+        sudo ldconfig
         cd snort3_demo && ./run_test.sh /usr/local/snort
