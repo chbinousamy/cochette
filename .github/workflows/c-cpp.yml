@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-chain:
-    runs-on: [ubuntu-latest, ARM64]
+    runs-on: [ubuntu-latest]
     steps:
     -
         name: "Check Runner CPU, Mem, Drv, Net"
