@@ -34,11 +34,11 @@ jobs:
       run: |
         git clone https://github.com/adrian-thurston/colm.git
         cd colm && ./autogen.sh && ./configure && make && sudo make install
-        ## which colm ## && whereis colm ## && locate colm
+        which colm && whereis colm ## && locate colm
     -
       name: "Build Ragel State Machine Compiler"
       run: |
-        which colm && whereis colm && locate colm
+        which colm && whereis colm ## && locate colm
         git clone https://github.com/adrian-thurston/ragel.git
         cd ragel && ./autogen.sh && ./configure && make && make install
     -
