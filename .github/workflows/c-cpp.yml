@@ -30,12 +30,12 @@ jobs:
         sudo apt install check autopoint flex help2man nodejs libboost-all-dev
         npm install -g bats
     -
-      name: "Build Ragel State Machine Compiler"
+      name: "Build colm, COmputer Language Machinery"
       run: |
         git clone https://github.com/adrian-thurston/colm.git
         cd colm && ./autogen.sh && ./configure && make && sudo make install
     -
-      name: "Ragel State Machine Compiler"
+      name: "Build Ragel State Machine Compiler"
       run: |
         git clone https://github.com/adrian-thurston/ragel.git
         cd ragel && ./autogen.sh && ./configure && make && make install
