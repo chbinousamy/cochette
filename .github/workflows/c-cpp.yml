@@ -15,13 +15,13 @@ jobs:
         run: |
           echo "########## MACHINE ARCH ############"
           uname -m
-          echo "########### RUNNER CPU ############"
+          echo "########### RUNNER CPU #############"
           lscpu
-          echo "########### RUNNER RAM ############"
+          echo "########### RUNNER RAM #############"
           free -h
-          echo "########### RUNNER DRV ###########"
+          echo "########### RUNNER DRV #############"
           df -h
-          
+          echo "######### RUNNER NETWORK ###########"
           ip -a
     -
       name: "Ubuntu update"
