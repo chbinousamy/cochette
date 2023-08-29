@@ -33,7 +33,7 @@ jobs:
       name: "Ragel State Machine Compiler"
       run: |
         git clone https://github.com/adrian-thurston/ragel.git
-        cd ragel && ./autogen.sh && ./autoupdate && ./configure && make && make install
+        cd ragel && ./autogen.sh && ./configure && make && make install
     -
       name: "hyperscan, high performance regular expression matching library"
       run: |
