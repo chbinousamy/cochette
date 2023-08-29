@@ -25,7 +25,7 @@ jobs:
       name: "Ubuntu update"
       run: |
         sudo apt update
-        sudo apt install check autopoint flex help2man nodejs
+        sudo apt install check autopoint flex help2man nodejs libboost-all-dev
         npm install -g bats
     -
       name: "hyperscan, high performance regular expression matching library"
