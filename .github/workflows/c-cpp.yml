@@ -31,7 +31,7 @@ jobs:
       name: "hyperscan, high performance regular expression matching library"
       run: |
         git clone --recurse-submodules --branch=v5.4.2 --depth=1 https://github.com/intel/hyperscan.git
-        cd hyperscan && cmake_policy(SET CMP0148 OLD) && cmake -G "Unix Makefiles" && ls -l
+        cd hyperscan && echo "cmake_policy(SET CMP0148 OLD)" >> CMakeLists.txt && cmake -G "Unix Makefiles" && ls -l
     -
       name: "libpcap, framework for low-level network monitoring"
       run: |
