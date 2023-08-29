@@ -28,6 +28,11 @@ jobs:
         sudo apt install check autopoint flex help2man nodejs
         npm install -g bats
     -
+      name: "hyperscan, high performance regular expression matching library"
+      run: |
+        git clone --recurse-submodules --branch=v5.4.2 --depth=1 https://github.com/intel/hyperscan.git
+        cd hyperscan && ./configure && make -j && sudo make install && make clean
+    -
       name: "libpcap, framework for low-level network monitoring"
       run: |
         git clone --recurse-submodules --branch=libpcap-1.10.4 --depth=1 https://github.com/the-tcpdump-group/libpcap
