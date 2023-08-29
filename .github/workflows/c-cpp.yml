@@ -27,7 +27,7 @@ jobs:
       name: "Ubuntu update"
       run: |
         sudo apt update
-        sudo apt install check autopoint flex help2man nodejs libboost-all-dev
+        sudo apt install check autopoint flex help2man nodejs libboost-all-dev locate
         npm install -g bats
     -
       name: "Build colm, COmputer Language Machinery"
