@@ -21,12 +21,19 @@ jobs:
           free -h
           echo "########### RUNNER DRV ###########"
           df -h
+          
+          ip -a
     -
       name: "Ubuntu update"
       run: |
         sudo apt update
         sudo apt install check autopoint flex help2man nodejs libboost-all-dev
         npm install -g bats
+    -
+      name: "Ragel State Machine Compiler"
+      run: |
+        git clone https://github.com/adrian-thurston/ragel.git
+        cd ragel && ./autogen.sh && ./configure && make && make install
     -
       name: "hyperscan, high performance regular expression matching library"
       run: |
