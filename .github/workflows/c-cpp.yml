@@ -22,7 +22,7 @@ jobs:
           echo "########### RUNNER DRV #############"
           df -h
           echo "######### RUNNER NETWORK ###########"
-          ip -a
+          ip addr
     -
       name: "Ubuntu update"
       run: |
