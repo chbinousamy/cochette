@@ -31,7 +31,7 @@ jobs:
       name: "hyperscan, high performance regular expression matching library"
       run: |
         git clone --recurse-submodules --branch=v5.4.2 --depth=1 https://github.com/intel/hyperscan.git
-        cd hyperscan && ./cmake .
+        cd hyperscan && cmake --build .
     -
       name: "libpcap, framework for low-level network monitoring"
       run: |
