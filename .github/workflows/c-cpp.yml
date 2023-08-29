@@ -33,7 +33,7 @@ jobs:
       name: ""
       run: |
         git clone https://github.com/adrian-thurston/colm.git
-        ./autogen.sh && ./configure && make && make install
+        cd colm && ./autogen.sh && ./configure && make && make install
     -
       name: "Ragel State Machine Compiler"
       run: |
