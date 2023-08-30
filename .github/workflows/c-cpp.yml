@@ -30,6 +30,16 @@ jobs:
         sudo apt install check autopoint flex help2man nodejs libboost-all-dev locate libtool automake autoconf nasm pkgconf
         npm install -g bats
     -
+      name: "PCRE2, Perl-Compatible Regular Expressions"
+      run: |
+        git clone --recurse-submodules --branch=pcre2-10.42 --depth=1 https://github.com/PCRE2Project/pcre2.git
+        cd pcre2 && ./autogen.sh && ./configure && make -j && sudo make install && make clean
+    -
+      name: "libpcap, framework for low-level network monitoring"
+      run: |
+        git clone --recurse-submodules --branch=libpcap-1.10.4 --depth=1 https://github.com/the-tcpdump-group/libpcap
+        cd libpcap && ./configure && make -j && sudo make install && make clean
+    -
       name: "Build colm, COmputer Language Machinery"
       run: |
         git clone https://github.com/adrian-thurston/colm.git
@@ -47,12 +57,7 @@ jobs:
       name: "hyperscan, high performance regular expression matching library"
       run: |
         git clone --recurse-submodules --branch=v5.4.2 --depth=1 https://github.com/intel/hyperscan.git
-        cd hyperscan && cmake -Wno-dev -G "Unix Makefiles" && ls -l
-    -
-      name: "libpcap, framework for low-level network monitoring"
-      run: |
-        git clone --recurse-submodules --branch=libpcap-1.10.4 --depth=1 https://github.com/the-tcpdump-group/libpcap
-        cd libpcap && ./configure && make -j && sudo make install && make clean
+        cd hyperscan && mkdir build && cd build && cmake -Wno-dev -G "Unix Makefiles" .. && ls -l
     -
       name: "libDAQ, the Data AcQuisition Library"
       run: |
@@ -79,11 +84,6 @@ jobs:
       run: |
         git clone --recurse-submodules --branch=v2.1.ROLLING --depth=1 https://github.com/LuaJIT/LuaJIT.git
         cd LuaJIT && make -j && sudo make install && make clean
-    -
-      name: "PCRE2, Perl-Compatible Regular Expressions"
-      run: |
-        git clone --recurse-submodules --branch=pcre2-10.42 --depth=1 https://github.com/PCRE2Project/pcre2.git
-        cd pcre2 && ./autogen.sh && ./configure && make -j && sudo make install && make clean
     - 
       name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
       run: |
