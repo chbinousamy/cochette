@@ -34,6 +34,8 @@ jobs:
       run: |
         git clone https://github.com/adrian-thurston/colm.git
         cd colm && ./autogen.sh && ./configure && make && sudo make install
+        export LD_LIBRARY_PATH=/usr/local/lib
+        sudo ldconfig
         which colm && whereis colm ## && locate colm
     -
       name: "Build Ragel State Machine Compiler"
