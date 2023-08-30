@@ -57,7 +57,7 @@ jobs:
       name: "hyperscan, high performance regular expression matching library"
       run: |
         git clone --recurse-submodules --branch=v5.4.2 --depth=1 https://github.com/intel/hyperscan.git
-        cd hyperscan && mkdir build && cd build && cmake -Wno-dev -G "Unix Makefiles" .. && ls -l
+        cd hyperscan && mkdir build && cd build && cmake -Wno-dev -G "Unix Makefiles" .. && sudo make install
     -
       name: "libDAQ, the Data AcQuisition Library"
       run: |
