@@ -53,6 +53,8 @@ jobs:
         which colm && whereis colm ## && locate colm
         git clone https://github.com/adrian-thurston/ragel.git
         cd ragel && ./autogen.sh && ./configure --with-colm=/usr/local && make && sudo make install
+        export LD_LIBRARY_PATH=/usr/local/lib
+        sudo ldconfig
     -
       name: "hyperscan, high performance regular expression matching library"
       run: |
