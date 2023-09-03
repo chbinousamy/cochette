@@ -1,6 +1,7 @@
 # Snort++
 
-https://github.com/chbinousamy/snort3/actions/workflows/c-cpp.yml/badge.svg
+![build workflow]
+(https://github.com/chbinousamy/snort3/actions/workflows/c-cpp.yml/badge.svg)
 
 Snort 3 is the next generation Snort IPS (Intrusion Prevention System).
 This file will show you what Snort++ has to offer and guide you through the
