@@ -1,5 +1,9 @@
 # Snort++
 
+[![Snort3 CI]
+(https://github.com/chbinou/actions/workflows/c-cpp.yml/badge.svg)]
+(https://github.com/chbinou/actions/workflows/c-cpp.yml)
+
 ![build workflow]
 (https://github.com/chbinousamy/snort3/actions/workflows/c-cpp.yml/badge.svg)
 
