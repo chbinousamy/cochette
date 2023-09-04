@@ -107,6 +107,6 @@ jobs:
     -
       name: "Run Demo Tests"
       run: |
-        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/grow1.git
+        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/grow1_demo.git
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
-        cd groin_demo && ./run_test.sh /usr/local/snort
+        cd grow1_demo && ./run_test.sh /usr/local/snort
