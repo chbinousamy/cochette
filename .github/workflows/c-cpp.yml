@@ -94,8 +94,8 @@ jobs:
     - 
       name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
       run: |
-        git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3.git
-        cd snort3 && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
+        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/groin.git
+        cd groin && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
         sudo ln -s /usr/local/snort/lib/pkgconfig/snort.pc /usr/lib/pkgconfig/snort.pc
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
     - 
