@@ -107,6 +107,6 @@ jobs:
     -
       name: "Run Demo Tests"
       run: |
-        git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3_demo.git
+        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/groin_demo.git
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
-        cd snort3_demo && ./run_test.sh /usr/local/snort
+        cd groin_demo && ./run_test.sh /usr/local/snort
