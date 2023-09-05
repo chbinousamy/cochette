@@ -94,19 +94,19 @@ jobs:
     - 
       name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
       run: |
-        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/grow1.git
-        cd grow1 && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
+        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/cochette.git
+        cd cochette && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
         sudo ln -s /usr/local/snort/lib/pkgconfig/snort.pc /usr/lib/pkgconfig/snort.pc
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
     - 
       name: "Snort++ Extras"
       run: |
-        git clone --recurse-submodules --depth=1 https://github.com/snort3/snort3_extra.git
-        cd snort3_extra && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
+        git clone --recurse-submodules --depth=1 https://github.com/snort3/cochette_extra.git
+        cd cochette_extra && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
     -
       name: "Run Demo Tests"
       run: |
-        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/grow1_demo.git
+        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/cochette_demo.git
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
-        cd grow1_demo && ./run_test.sh /usr/local/snort
+        cd cochette_demo && ./run_test.sh /usr/local/snort
