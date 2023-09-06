@@ -1,4 +1,4 @@
-name: Lard pas Net - Build Tests
+name: ARPANET - Build Tests
 
 on:
   push:
