@@ -1,4 +1,4 @@
-name: Build Chain - Lard pas Net Test
+name: Lard pas Net - Build Chain
 
 on:
   push:
