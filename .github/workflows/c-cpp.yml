@@ -1,4 +1,4 @@
-name: ARPANET - Build Tests
+name: Chain Build Tests Demo
 
 on:
   push:
