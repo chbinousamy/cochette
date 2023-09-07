@@ -11,19 +11,6 @@ jobs:
     runs-on: [ubuntu-latest]
     steps:
     -
-        name: "Check Runner CPU, Mem, Drv, Net"
-        run: |
-          echo "########## MACHINE ARCH ############"
-          uname -m
-          echo "########### RUNNER CPU #############"
-          lscpu
-          echo "########### RUNNER RAM #############"
-          free -h
-          echo "########### RUNNER DRV #############"
-          df -h
-          echo "######### RUNNER NETWORK ###########"
-          ip addr
-    -
       name: "Ubuntu update"
       run: |
         sudo apt update
