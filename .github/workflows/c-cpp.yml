@@ -2,9 +2,9 @@ name: Chain Build Tests Demo
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "cochette" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "cochette" ]
 
 jobs:
   build-chain:
