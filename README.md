@@ -1,4 +1,4 @@
-# Cochette++
+# Porcupine++
 
 [![Cochette CI](https://github.com/chbinousamy/cochette/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/chbinousamy/cochette/actions/workflows/c-cpp.yml)
 
