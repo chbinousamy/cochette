@@ -1,6 +1,6 @@
-# Porcupine++
+# Cochette++
 
-[![Cochette CI](https://github.com/chbinousamy/cochette/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/chbinousamy/cochette/actions/workflows/c-cpp.yml)
+[![Cochette CI](https://github.com/chbinousamy/porcupine/actions/workflows/c-cpp.yml/badge.svg?branch=cochette)](https://github.com/chbinousamy/porcupine/actions/workflows/c-cpp.yml?branch=cochette)
 
 Snort 3 is the next generation Snort IPS (Intrusion Prevention System).
 This file will show you what Snort++ has to offer and guide you through the
