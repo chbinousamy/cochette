@@ -2,9 +2,9 @@ name: Chain Build Tests Demo
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "verrat" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "verrat" ]
 
 jobs:
   build-chain:
