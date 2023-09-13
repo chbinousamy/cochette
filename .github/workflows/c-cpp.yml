@@ -82,18 +82,18 @@ jobs:
       name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
       run: |
         git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/porcinet.git
-        cd cochette && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
+        cd porcinet && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
         sudo ln -s /usr/local/snort/lib/pkgconfig/snort.pc /usr/lib/pkgconfig/snort.pc
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
     - 
       name: "Snort++ Extras"
       run: |
         git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/porcinet_extra.git
-        cd cochette_extra && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
+        cd porcinet_extra && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
     -
       name: "Run Demo Tests"
       run: |
         git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/porcinet_demo.git
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
-        cd cochette_demo && ./run_test.sh /usr/local/snort
+        cd porcinet_demo && ./run_test.sh /usr/local/snort
