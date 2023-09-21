@@ -1,4 +1,4 @@
-# Porcupine
+# Porcupine / Porc-Epic
 
 ![alt text](https://github.com/chbinousamy/porcinet/blob/porcupine/assets/images/IndPorcupine.jpg?raw=true)
 
