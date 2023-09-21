@@ -2,9 +2,9 @@ name: Chain Build Tests Demo
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "porcupine" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "porcupine" ]
 
 jobs:
   build-chain:
@@ -16,6 +16,10 @@ jobs:
         sudo apt update
         sudo apt install check autopoint flex help2man nodejs libboost-all-dev locate libtool automake autoconf nasm pkgconf
         npm install -g bats
+    -
+      run: |
+        git clone --recurse-submodules --depth=1 --branch porcupine https://github.com/chbinousamy/porcinet.git
+        cd porcinet
     -
       name: "PCRE2, Perl-Compatible Regular Expressions"
       run: |
