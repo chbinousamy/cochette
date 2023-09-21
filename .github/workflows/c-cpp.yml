@@ -17,10 +17,6 @@ jobs:
         sudo apt install check autopoint flex help2man nodejs libboost-all-dev locate libtool automake autoconf nasm pkgconf
         npm install -g bats
     -
-      run: |
-        git clone --recurse-submodules --depth=1 --branch porcupine https://github.com/chbinousamy/porcinet.git
-        cd porcinet
-    -
       name: "PCRE2, Perl-Compatible Regular Expressions"
       run: |
         git clone --recurse-submodules --branch=pcre2-10.42 --depth=1 https://github.com/PCRE2Project/pcre2.git
@@ -85,19 +81,19 @@ jobs:
     - 
       name: "snort3, the next generation Snort IPS (Intrusion Prevention System)"
       run: |
-        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/porcinet.git
+        git clone --recurse-submodules --depth=1 --branch porcupine https://github.com/chbinousamy/porcinet.git
         cd porcinet && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
         sudo ln -s /usr/local/snort/lib/pkgconfig/snort.pc /usr/lib/pkgconfig/snort.pc
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
     - 
       name: "Snort++ Extras"
       run: |
-        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/porcinet_extra.git
+        git clone --recurse-submodules --depth=1 --branch porcupine https://github.com/chbinousamy/porcinet_extra.git
         cd porcinet_extra && ./configure_cmake.sh && cd build && make -j 4 && sudo make install && make clean
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
     -
       name: "Run Demo Tests"
       run: |
-        git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/porcinet_demo.git
+        git clone --recurse-submodules --depth=1 --branch porcupine https://github.com/chbinousamy/porcinet_demo.git
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
         cd porcinet_demo && ./run_test.sh /usr/local/snort
