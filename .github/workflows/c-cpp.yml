@@ -1,4 +1,4 @@
-name: Chain Build Tests Demo
+name: Cochette Chain Build Tests Demo
 
 on:
   push:
