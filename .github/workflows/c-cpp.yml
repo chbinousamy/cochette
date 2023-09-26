@@ -1,4 +1,4 @@
-name: Chain Build Tests Demo
+name: Verrat Chain Build Tests Demo
 
 on:
   push:
