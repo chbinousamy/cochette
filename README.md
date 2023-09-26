@@ -2,7 +2,7 @@
 
 [![Porcinet CI](https://github.com/chbinousamy/porcinet/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/chbinousamy/porcinet/actions/workflows/c-cpp.yml)
 
-Porcinet (Snort 3) is the next generation Snort IPS (Intrusion Prevention System).
+Porcinet (Snort 3++) is the next generation Snort IPS (Intrusion Prevention System).
 This file will show you what Snort++ has to offer and guide you through the
 steps from download to demo.  If you are unfamiliar with Snort you should
 take a look at the Snort documentation first. We will cover the following
