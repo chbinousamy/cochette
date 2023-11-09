@@ -100,5 +100,5 @@ jobs:
     -
       name: "Run memory leaks tests"
       run: |
-        valgrind --tool=memcheck --leak-check=full --leak-resolution=high --show-reachable=yes /usr/local/snort
-        valgrind --tool=cachegrind --I1=65535,2,64 --D1=65535,2,64 --L2=65535,2,64 /usr/local/snort
+        valgrind --tool=memcheck --leak-check=full --leak-resolution=high --show-reachable=yes /usr/local/snort/bin/snort
+        valgrind --tool=cachegrind --I1=65535,2,64 --D1=65535,2,64 --L2=65535,2,64 /usr/local/snort/bin/snort
