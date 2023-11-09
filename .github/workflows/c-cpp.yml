@@ -14,7 +14,7 @@ jobs:
       name: "Ubuntu update"
       run: |
         sudo apt update
-        sudo apt install check autopoint flex help2man nodejs libboost-all-dev locate libtool automake autoconf nasm pkgconf
+        sudo apt install -y check autopoint flex help2man nodejs libboost-all-dev locate libtool automake autoconf nasm pkgconf valgrind
         npm install -g bats
     -
       name: "PCRE2, Perl-Compatible Regular Expressions"
@@ -97,3 +97,8 @@ jobs:
         git clone --recurse-submodules --depth=1 https://github.com/chbinousamy/porcinet_demo.git
         export LD_LIBRARY_PATH=/usr/local/lib && sudo ldconfig
         cd porcinet_demo && ./run_test.sh /usr/local/snort
+    -
+      name: "Run memory leaks tests"
+      run: |
+        valgrind --tool=memcheck --leak-check=full --leak-resolution=high --show-reachable=yes /usr/local/snort
+        valgrind --tool=cachegrind --I1=65535,2,64 --D1=65535,2,64 --L2=65535,2,64 /usr/local/snort
