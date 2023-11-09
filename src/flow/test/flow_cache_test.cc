@@ -31,100 +31,63 @@
 #include "flow/flow_cache.h"
 #include "flow/ha.h"
 #include "flow/session.h"
-#include "main/policy.h"
-#include "main/snort_config.h"
-#include "main/thread_config.h"
+#include "main/analyzer.h"
 #include "managers/inspector_manager.h"
 #include "packet_io/active.h"
-#include "packet_tracer/packet_tracer.h"
 #include "protocols/icmp4.h"
-#include "protocols/packet.h"
 #include "protocols/tcp.h"
 #include "protocols/udp.h"
 #include "protocols/vlan.h"
-#include "stream/stream.h"
 #include "utils/util.h"
 #include "trace/trace_api.h"
 
 #include <CppUTest/CommandLineTestRunner.h>
 #include <CppUTest/TestHarness.h>
 
+#include "flow_stubs.h"
+
 using namespace snort;
 
 THREAD_LOCAL bool Active::s_suspend = false;
 THREAD_LOCAL Active::ActiveSuspendReason Active::s_suspend_reason = Active::ASP_NONE;
 
-THREAD_LOCAL PacketTracer* snort::s_pkt_trace = nullptr;
 THREAD_LOCAL const Trace* stream_trace = nullptr;
 
 void Active::drop_packet(snort::Packet const*, bool) { }
-PacketTracer::~PacketTracer() = default;
-void PacketTracer::log(const char*, ...) { }
-void PacketTracer::open_file() { }
-void PacketTracer::dump_to_daq(Packet*) { }
-void PacketTracer::reset(bool) { }
-void PacketTracer::pause() { }
-void PacketTracer::unpause() { }
 void Active::set_drop_reason(char const*) { }
-Packet::Packet(bool) { }
-Packet::~Packet() = default;
-uint32_t Packet::get_flow_geneve_vni() const { return 0; }
-Flow::~Flow() = default;
-DetectionEngine::DetectionEngine() = default;
-ExpectCache::~ExpectCache() = default;
-DetectionEngine::~DetectionEngine() = default;
-void Flow::init(PktType) { }
-void Flow::flush(bool) { }
-void Flow::reset(bool) { }
-void Flow::free_flow_data() { }
-void DataBus::publish(unsigned, unsigned, DataEvent&, Flow*) { }
-void DataBus::publish(unsigned, unsigned, const uint8_t*, unsigned, Flow*) { }
-void DataBus::publish(unsigned, unsigned, Packet*, Flow*) { }
-const SnortConfig* SnortConfig::get_conf() { return nullptr; }
-void Flow::set_client_initiate(Packet*) { }
-void Flow::set_direction(Packet*) { }
-void set_network_policy(unsigned) { }
-void set_inspection_policy(unsigned) { }
-void set_ips_policy(const snort::SnortConfig*, unsigned) { }
-void Flow::set_mpls_layer_per_dir(Packet*) { }
-void DetectionEngine::disable_all(Packet*) { }
-void Stream::drop_traffic(const Packet*, char) { }
-bool Stream::blocked_flow(Packet*) { return true; }
 ExpectCache::ExpectCache(uint32_t) { }
+ExpectCache::~ExpectCache() = default;
 bool ExpectCache::check(Packet*, Flow*) { return true; }
 bool ExpectCache::is_expected(Packet*) { return true; }
+void DetectionEngine::disable_all(Packet*) { }
 Flow* HighAvailabilityManager::import(Packet&, FlowKey&) { return nullptr; }
-bool HighAvailabilityManager::in_standby(Flow*) { return true; }
+bool HighAvailabilityManager::in_standby(Flow*) { return false; }
 SfIpRet SfIp::set(void const*, int) { return SFIP_SUCCESS; }
-void snort::trace_vprintf(const char*, TraceLevel, const char*, const Packet*, const char*, va_list) {}
-uint8_t snort::TraceApi::get_constraints_generation() { return 0; }
-void snort::TraceApi::filter(const Packet&) {}
+const SnortConfig* SnortConfig::get_conf() { return nullptr; }
+uint8_t TraceApi::get_constraints_generation() { return 0; }
+void TraceApi::filter(const Packet&) {}
 void ThreadConfig::preemptive_kick() {}
 
 namespace snort
 {
-NetworkPolicy* get_network_policy() { return nullptr; }
-InspectionPolicy* get_inspection_policy() { return nullptr; }
-IpsPolicy* get_ips_policy() { return nullptr; }
-unsigned SnortConfig::get_thread_reload_id() { return 0; }
+Flow::~Flow() = default;
+void Flow::init(PktType) { }
+void Flow::flush(bool) { }
+void Flow::reset(bool) { }
+void Flow::free_flow_data() { }
+void Flow::set_client_initiate(Packet*) { }
+void Flow::set_direction(Packet*) { }
+void Flow::set_mpls_layer_per_dir(Packet*) { }
 
-namespace layer
-{
-const vlan::VlanTagHdr* get_vlan_layer(const Packet* const) { return nullptr; }
-}
 time_t packet_time() { return 0; }
-}
 
-namespace snort
-{
+void trace_vprintf(const char*, TraceLevel, const char*, const Packet*, const char*, va_list) {}
+
 namespace ip
 {
 uint32_t IpApi::id() const { return 0; }
 }
 }
-
-void Stream::stop_inspection(Flow*, Packet*, char, int32_t, int) { }
-
 
 int ExpectCache::add_flow(const Packet*, PktType, IpProtocol, const SfIp*, uint16_t,
     const SfIp*, uint16_t, char, FlowData*, SnortProtocolId, bool, bool, bool, bool)
@@ -259,6 +222,82 @@ TEST(flow_prune, prune_all_blocked_flows)
     CHECK(cache->get_count() == fcg.max_flows);
     CHECK(cache->delete_flows(3) == 3);
     CHECK(cache->get_count() == 0);
+
+    cache->purge();
+    CHECK(cache->get_flows_allocated() == 0);
+    delete cache;
+}
+
+
+// prune base on the proto type of the flow
+TEST(flow_prune, prune_proto)
+{
+    FlowCacheConfig fcg;
+    fcg.max_flows = 5;
+    fcg.prune_flows = 3;
+
+    for(uint8_t i = to_utype(PktType::NONE); i <= to_utype(PktType::MAX); i++)
+        fcg.proto[i].nominal_timeout = 5;
+
+    FlowCache *cache = new FlowCache(fcg);
+    int port = 1;
+
+    for ( unsigned i = 0; i < 2; i++ )
+    {
+        FlowKey flow_key;
+        flow_key.port_l = port++;
+        flow_key.pkt_type = PktType::UDP;
+        cache->allocate(&flow_key);
+    }
+
+    CHECK (cache->get_count() == 2);
+
+    //pruning should not happen for all other proto except UDP
+    for(uint8_t i = 0; i < to_utype(PktType::MAX) - 1; i++)
+    {
+        if (i == to_utype(PktType::UDP))
+            continue;
+        CHECK(cache->prune_one(PruneReason::NONE, true, i) == false);
+    }
+
+    //pruning should happen for UDP
+    CHECK(cache->prune_one(PruneReason::NONE, true, to_utype(PktType::UDP)) == true);
+
+    FlowKey flow_key2;
+    flow_key2.port_l = port++;
+    flow_key2.pkt_type = PktType::ICMP;
+    cache->allocate(&flow_key2);
+
+    CHECK (cache->get_count() == 2);
+
+    //target flow is ICMP
+    CHECK(cache->prune_multiple(PruneReason::NONE, true) == 1);
+
+    //adding UDP flow it will become LRU
+    for ( unsigned i = 0; i < 2; i++ )
+    {
+        FlowKey flow_key;
+        flow_key.port_l = port++;
+        flow_key.pkt_type = PktType::UDP;
+        Flow* flow = cache->allocate(&flow_key);
+        flow->last_data_seen = 2+i;
+    }
+
+    //adding TCP flow it will become MRU and put UDP flow to LRU
+    for ( unsigned i = 0; i < 3; i++ )
+    {
+        FlowKey flow_key;
+        flow_key.port_l = port++;
+        flow_key.pkt_type = PktType::TCP;
+        Flow* flow = cache->allocate(&flow_key);
+        flow->last_data_seen = 4+i; //this will force to timeout later than UDP
+    }
+
+    //timeout should happen for 2 UDP and 1 TCP flow
+    CHECK( 3 == cache->timeout(5,9));
+
+    //target flow UDP flow and it will fail because no UDP flow is present
+    CHECK(cache->prune_one(PruneReason::NONE, true, to_utype(PktType::UDP)) == false);
 
     cache->purge();
     CHECK(cache->get_flows_allocated() == 0);

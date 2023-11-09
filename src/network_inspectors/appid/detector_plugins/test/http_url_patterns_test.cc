@@ -60,7 +60,7 @@ namespace snort
 {
 AppIdSessionApi::AppIdSessionApi(const AppIdSession*, const SfIp&) :
     StashGenericObject(STASH_GENERIC_OBJECT_APPID) {}
-SearchTool::SearchTool(bool) { }
+SearchTool::SearchTool(bool, const char*) { }
 void SearchTool::reload() { }
 static bool test_find_all_done = false;
 static bool test_find_all_enabled = false;
@@ -91,6 +91,7 @@ AlpnPatternMatchers::~AlpnPatternMatchers() = default;
 CipPatternMatchers::~CipPatternMatchers() = default;
 void AppIdModule::reset_stats() {}
 bool AppIdInspector::configure(snort::SnortConfig*) { return true; }
+void appid_log(const snort::Packet*, unsigned char, char const*, ...) { }
 
 TEST_GROUP(http_url_patterns_tests)
 {

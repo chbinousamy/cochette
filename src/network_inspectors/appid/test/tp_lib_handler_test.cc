@@ -43,7 +43,8 @@ static OdpContext stub_odp_ctxt(config, nullptr);
 OdpContext* AppIdContext::odp_ctxt = &stub_odp_ctxt;
 ThirdPartyAppIdContext* AppIdContext::tp_appid_ctxt = nullptr;
 
-snort::SearchTool::SearchTool(bool) { }
+snort::SearchTool::SearchTool(bool multi, const char*) : mpsegrp(nullptr), max_len(0), multi_match(multi)
+{ }
 snort::SearchTool::~SearchTool() = default;
 
 AppIdDiscovery::~AppIdDiscovery() = default;
@@ -68,6 +69,7 @@ void ServiceDiscovery::initialize(AppIdInspector&) { }
 void ServiceDiscovery::reload() { }
 int ServiceDiscovery::add_service_port(AppIdDetector*, const ServiceDetectorPort&)
 { return 0; }
+void appid_log(const snort::Packet*, unsigned char, char const*, ...) { }
 
 TEST_GROUP(tp_lib_handler)
 {

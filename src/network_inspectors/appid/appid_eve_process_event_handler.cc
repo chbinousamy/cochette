@@ -51,12 +51,9 @@ void AppIdEveProcessEventHandler::handle(DataEvent& event, Flow* flow)
         asd = AppIdSession::allocate_session(p, p->get_ip_proto_next(), dir,
             inspector, *pkt_thread_odp_ctxt);
         if (appidDebug->is_enabled())
-        {
             appidDebug->activate(flow, asd, inspector.get_ctxt().config.log_all_sessions);
-            if (appidDebug->is_active())
-                LogMessage("AppIdDbg %s New AppId session at mercury event\n",
-                    appidDebug->get_debug_session());
-        }
+
+        appid_log(p, TRACE_DEBUG_LEVEL, "New AppId session at mercury event\n");
     }
 
     if (!asd->get_session_flags(APPID_SESSION_DISCOVER_APP | APPID_SESSION_SPECIAL_MONITORED))
@@ -116,8 +113,8 @@ void AppIdEveProcessEventHandler::handle(DataEvent& event, Flow* flow)
 
     if (!server_name.empty())
     {
-        AppId client_id = APP_ID_NONE;
-        AppId payload_id = APP_ID_NONE;
+        AppId tmp_client_id = APP_ID_NONE;
+        AppId tmp_payload_id = APP_ID_NONE;
 
         if (!asd->tsession)
             asd->tsession = new TlsSession();
@@ -126,33 +123,29 @@ void AppIdEveProcessEventHandler::handle(DataEvent& event, Flow* flow)
         asd->set_tls_host();
 
         odp_ctxt.get_ssl_matchers().scan_hostname(reinterpret_cast<const uint8_t*>(server_name.c_str()),
-            server_name.length(), client_id, payload_id);
-        asd->set_payload_id(payload_id);
+            server_name.length(), tmp_client_id, tmp_payload_id);
+        asd->set_payload_id(tmp_payload_id);
     }
 
-    if (appidDebug->is_active())
+    std::string debug_str;
+
+    debug_str += "encrypted client app: " + std::to_string(client_id);
+    if (!name.empty())
+        debug_str += ", process name: " + name + ", confidence: " + std::to_string(conf);
+
+    if (!server_name.empty())
+        debug_str += ", server name: " + server_name;
+
+    if (!user_agent.empty())
+        debug_str += ", user agent: " + user_agent;
+
+    if (is_quic && alpn_vec.size())
     {
-        std::string debug_str;
-
-        debug_str += "encrypted client app: " + std::to_string(client_id);
-        if (!name.empty())
-            debug_str += ", process name: " + name + ", confidence: " + std::to_string(conf);
-
-        if (!server_name.empty())
-            debug_str += ", server name: " + server_name;
-
-        if (!user_agent.empty())
-            debug_str += ", user agent: " + user_agent;
-
-        if (is_quic && alpn_vec.size())
-        {
-            debug_str += ", alpn: [ ";
-            for(unsigned int i = 0; i < alpn_vec.size(); i++)
-                debug_str += alpn_vec[i] + " ";
-            debug_str += "]";
-        }
-
-        LogMessage("AppIdDbg %s %s\n",
-            appidDebug->get_debug_session(), debug_str.c_str());
+        debug_str += ", alpn: [ ";
+        for(unsigned int i = 0; i < alpn_vec.size(); i++)
+            debug_str += alpn_vec[i] + " ";
+        debug_str += "]";
     }
+
+    appid_log(p, TRACE_DEBUG_LEVEL, "%s\n", debug_str.c_str());
 }

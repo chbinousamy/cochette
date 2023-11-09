@@ -63,21 +63,20 @@ static void purge_alerts_callback_ips(IpsContext* c)
         session->client.reassembler.purge_alerts();
 }
 
-bool TcpReassembler::is_segment_pending_flush(TcpReassemblerState& trs)
+bool TcpReassembler::is_segment_pending_flush(const TcpReassemblerState& trs) const
 {
     return ( get_pending_segment_count(trs, 1) > 0 );
 }
 
-uint32_t TcpReassembler::get_pending_segment_count(TcpReassemblerState& trs, unsigned max)
+uint32_t TcpReassembler::get_pending_segment_count(const TcpReassemblerState& trs, unsigned max) const
 {
     uint32_t n = trs.sos.seg_count - trs.flush_count;
-    TcpSegmentNode* tsn;
 
     if ( !n || max == 1 )
         return n;
 
     n = 0;
-    tsn = trs.sos.seglist.head;
+    const TcpSegmentNode* tsn = trs.sos.seglist.head;
     while ( tsn )
     {
         if ( tsn->c_len && SEQ_LT(tsn->c_seq, trs.tracker->r_win_base) )
@@ -265,17 +264,19 @@ void TcpReassembler::dup_reassembly_segment(
 
 bool TcpReassembler::add_alert(TcpReassemblerState& trs, uint32_t gid, uint32_t sid)
 {
-    trs.alerts.emplace_back(gid, sid);
+    assert(trs.alerts.size() <=
+        (uint32_t)(get_ips_policy()->rules_loaded + get_ips_policy()->rules_shared));
+
+    if (!this->check_alerted(trs, gid, sid))
+        trs.alerts.emplace_back(gid, sid);
+
     return true;
 }
 
 bool TcpReassembler::check_alerted(TcpReassemblerState& trs, uint32_t gid, uint32_t sid)
 {
-    for ( auto& alert : trs.alerts )
-       if (alert.gid == gid && alert.sid == sid)
-            return true;
-
-    return false;
+    return std::any_of(trs.alerts.cbegin(), trs.alerts.cend(),
+        [gid, sid](const StreamAlertInfo& alert){ return alert.gid == gid && alert.sid == sid; });
 }
 
 int TcpReassembler::update_alert(TcpReassemblerState& trs, uint32_t gid, uint32_t sid,
@@ -284,13 +285,15 @@ int TcpReassembler::update_alert(TcpReassemblerState& trs, uint32_t gid, uint32_
     // FIXIT-M comparison of seq_num is wrong, compare value is always 0, should be seq_num of wire packet
     uint32_t seq_num = 0;
 
-    for ( auto& alert : trs.alerts )
-       if (alert.gid == gid && alert.sid == sid && SEQ_EQ(alert.seq, seq_num))
-       {
-           alert.event_id = event_id;
-           alert.event_second = event_second;
-           return 0;
-       }
+    auto it = std::find_if(trs.alerts.begin(), trs.alerts.end(),
+        [gid, sid, seq_num](const StreamAlertInfo& alert)
+        { return alert.gid == gid && alert.sid == sid && SEQ_EQ(alert.seq, seq_num); });
+    if (it != trs.alerts.end())
+    {
+        (*it).event_id = event_id;
+        (*it).event_second = event_second;
+        return 0;
+    }
 
     return -1;
 }
@@ -922,6 +925,7 @@ int32_t TcpReassembler::scan_data_pre_ack(TcpReassemblerState& trs, uint32_t* fl
         if (flush_pt >= 0)
         {
             trs.sos.seglist.cur_sseg = tsn;
+            update_rcv_nxt(trs, *tsn);
             return flush_pt;
         }
 
@@ -936,6 +940,10 @@ int32_t TcpReassembler::scan_data_pre_ack(TcpReassemblerState& trs, uint32_t* fl
     }
 
     trs.sos.seglist.cur_sseg = tsn;
+
+    if (tsn)
+        update_rcv_nxt(trs, *tsn);
+    
     return ret_val;
 }
 
@@ -947,7 +955,7 @@ static inline void fallback(TcpStreamTracker& trk, bool server_side, uint16_t ma
 
     // FIXIT-L: consolidate these 3
     bool to_server = splitter->to_server();
-    assert(splitter && server_side == to_server && server_side == !trk.client_tracker);
+    assert(server_side == to_server && server_side == !trk.client_tracker);
 #endif
 
     trk.set_splitter(new AtomSplitter(server_side, max));
@@ -1001,6 +1009,16 @@ void TcpReassembler::check_first_segment_hole(TcpReassemblerState& trs)
             trs.tracker->rcv_nxt = trs.tracker->r_win_base;
             trs.paf_state.paf = StreamSplitter::START;
         }
+}
+
+void TcpReassembler::update_rcv_nxt(TcpReassemblerState& trs, TcpSegmentNode& tsn)
+{
+    uint32_t temp = (tsn.i_seq + tsn.i_len);
+
+    if (!trs.tracker->ooo_packet_seen and SEQ_LT(trs.tracker->rcv_nxt, temp))
+        trs.tracker->ooo_packet_seen = true;
+
+    trs.tracker->rcv_nxt = temp;
 }
 
 bool TcpReassembler::has_seglist_hole(TcpReassemblerState& trs, TcpSegmentNode& tsn, PAF_State& ps,

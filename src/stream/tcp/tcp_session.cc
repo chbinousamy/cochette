@@ -112,6 +112,7 @@ bool TcpSession::setup(Packet*)
 
     tcp_config = get_tcp_cfg(flow->ssn_server);
     flow->set_default_session_timeout(tcp_config->session_timeout, false);
+    flow->set_idle_timeout(tcp_config->embryonic_timeout);
     set_os_policy();
 
     SESSION_STATS_ADD(tcpStats)
@@ -170,6 +171,9 @@ void TcpSession::clear_session(bool free_flow_data, bool flush_segments, bool re
     lws_init = false;
     tcp_init = false;
     tcpStats.released++;
+
+    client.ooo_packet_seen = false;
+    server.ooo_packet_seen = false;
 
     if ( flush_segments )
     {
@@ -454,7 +458,7 @@ void TcpSession::update_stream_order(const TcpSegmentDescriptor& tsd, bool align
             if ( !(flow->get_session_flags() & SSNFLAG_STREAM_ORDER_BAD) )
                 flow->set_session_flags(SSNFLAG_STREAM_ORDER_BAD);
             tsd.set_packet_flags(PKT_STREAM_ORDER_BAD);
-         }
+        }
     }
 }
 
@@ -472,18 +476,18 @@ int TcpSession::process_tcp_data(TcpSegmentDescriptor& tsd)
     {
         /* check if we're in the window */
         if ( tcp_config->policy != StreamPolicy::OS_PROXY
-            and listener->normalizer.get_stream_window(tsd) == 0 )
+            and !Stream::is_midstream(flow) and listener->normalizer.get_stream_window(tsd) == 0 )
         {
-            if (tsd.get_len() == ZERO_WIN_PROBE_LEN)
+            if ( !listener->normalizer.data_inside_window(tsd) )
+            {
+                listener->normalizer.trim_win_payload(tsd, 0, tsd.is_nap_policy_inline());
+                return STREAM_UNALIGNED;
+            }
+            if( listener->get_iss() )
             {
                 tcpStats.zero_win_probes++;
                 listener->normalizer.set_zwp_seq(seq);
-            }
-            else
-            {
-                bool force = (tsd.is_nap_policy_inline() && listener->get_iss());
-                listener->normalizer.trim_win_payload(tsd, 0, force);
-                return STREAM_UNALIGNED;
+                listener->normalizer.trim_win_payload(tsd, MAX_ZERO_WIN_PROBE_LEN, tsd.is_nap_policy_inline());
             }
         }
 
@@ -493,7 +497,7 @@ int TcpSession::process_tcp_data(TcpSegmentDescriptor& tsd)
 
         if ( tsd.is_data_segment() )
         {
-            update_stream_order(tsd, true);
+            update_stream_order(tsd, !listener->ooo_packet_seen);
             process_tcp_stream(tsd);
             return STREAM_ALIGNED;
         }
@@ -508,13 +512,16 @@ int TcpSession::process_tcp_data(TcpSegmentDescriptor& tsd)
 
         /* check if we're in the window */
         if ( tcp_config->policy != StreamPolicy::OS_PROXY
-            and listener->normalizer.get_stream_window(tsd) == 0 )
+            and !Stream::is_midstream(flow) and listener->normalizer.get_stream_window(tsd) == 0 )
         {
-            if (tsd.get_len() == ZERO_WIN_PROBE_LEN)
+            if ( SEQ_EQ(seq, listener->normalizer.get_zwp_seq()) )
+            {
                 tcpStats.zero_win_probes++;
+                listener->normalizer.trim_win_payload(tsd, MAX_ZERO_WIN_PROBE_LEN, tsd.is_nap_policy_inline());
+                return STREAM_UNALIGNED;
+            }
 
-            bool force = (tsd.is_nap_policy_inline() && listener->get_iss());
-            listener->normalizer.trim_win_payload(tsd, 0, force);
+            listener->normalizer.trim_win_payload(tsd, 0, tsd.is_nap_policy_inline());
             return STREAM_UNALIGNED;
         }
         if ( tsd.is_data_segment() )
@@ -846,18 +853,18 @@ void TcpSession::handle_data_segment(TcpSegmentDescriptor& tsd)
         // FIXIT-M move this to normalizer base class, handle OS_PROXY in derived class
         if ( tcp_config->policy != StreamPolicy::OS_PROXY )
         {
-            // drop packet if sequence num is invalid
-            if ( !listener->is_segment_seq_valid(tsd) )
-            {
-                tcpStats.invalid_seq_num++;
-                listener->normalizer.trim_win_payload(tsd);
-                return;
-            }
-
             // these normalizations can't be done if we missed setup. and
             // window is zero in one direction until we've seen both sides.
-            if ( !(flow->get_session_flags() & SSNFLAG_MIDSTREAM) && flow->two_way_traffic() )
+            if ( !(Stream::is_midstream(flow)) && flow->two_way_traffic() )
             {
+                // drop packet if sequence num is invalid
+                if ( !listener->is_segment_seq_valid(tsd) )
+                {
+                    tcpStats.invalid_seq_num++;
+                    listener->normalizer.trim_win_payload(tsd);
+                    return;
+                }
+
                 // trim to fit in listener's window and mss
                 listener->normalizer.trim_win_payload
                     (tsd, (listener->r_win_base + listener->get_snd_wnd() - listener->rcv_nxt));
@@ -1153,7 +1160,7 @@ int TcpSession::process_tcp_packet(TcpSegmentDescriptor& tsd, const Packet* p)
 
 int TcpSession::process(Packet* p)
 {
-    Profile profile(s5TcpPerfStats);
+    Profile profile(s5TcpPerfStats);    // cppcheck-suppress unreadVariable
     assert(flow->ssn_server && flow->pkt_type == PktType::TCP);
 
     if ( ignore_this_packet(p) )

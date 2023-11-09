@@ -29,7 +29,6 @@
 #include <sys/resource.h>
 
 #include "flow/flow.h"
-#include "log/messages.h"
 #include "main/analyzer_command.h"
 #include "managers/inspector_manager.h"
 #include "managers/module_manager.h"
@@ -71,7 +70,7 @@ unsigned AppIdInspector::pub_id = 0;
 
 static THREAD_LOCAL PacketTracer::TracerMute appid_mute;
 
-static void add_appid_to_packet_trace(Flow& flow, const OdpContext& odp_context)
+static void add_appid_to_packet_trace(const Flow& flow, const OdpContext& odp_context)
 {
     AppIdSession* session = appid_api.get_appid_session(flow);
     // Skip sessions using old odp context after odp reload
@@ -103,8 +102,7 @@ AppIdInspector::AppIdInspector(AppIdModule& mod)
 
 AppIdInspector::~AppIdInspector()
 {
-    if (ctxt)
-        delete ctxt;
+    delete ctxt;
     delete config;
 }
 
@@ -138,11 +136,10 @@ bool AppIdInspector::configure(SnortConfig* sc)
     {
     #endif
         if ( prev_maxrss == -1 or getrusage(RUSAGE_SELF, &ru) == -1 )
-            ErrorMessage("appid: fetching memory usage failed\n");
+            appid_log(nullptr, TRACE_ERROR_LEVEL, "appid: fetching memory usage failed\n");
         else
-            LogMessage("appid: MaxRss diff: %li\n", ru.ru_maxrss - prev_maxrss);
-
-        LogMessage("appid: patterns loaded: %u\n", ctxt->get_odp_ctxt().get_pattern_count());
+            appid_log(nullptr, TRACE_INFO_LEVEL, "appid: MaxRss diff: %li\n", ru.ru_maxrss - prev_maxrss);
+        appid_log(nullptr, TRACE_INFO_LEVEL, "appid: patterns loaded: %u\n", ctxt->get_odp_ctxt().get_pattern_count());
     #ifdef REG_TEST
     }
     #endif
@@ -224,6 +221,7 @@ void AppIdInspector::tear_down(SnortConfig*)
 
 void AppIdInspector::eval(Packet* p)
 {
+    // cppcheck-suppress unreadVariable
     Profile profile(appid_perf_stats);
     appid_stats.packets++;
 
@@ -271,7 +269,8 @@ static void appid_inspector_pterm()
 static void appid_inspector_tinit()
 {
     AppIdPegCounts::init_pegs();
-    appidDebug = new AppIdDebug();
+    if (!appidDebug)
+        appidDebug = new AppIdDebug();
 }
 
 static void appid_inspector_tterm()
@@ -281,6 +280,7 @@ static void appid_inspector_tterm()
     AppIdPegCounts::cleanup_pegs();
     AppIdServiceState::clean();
     delete appidDebug;
+    appidDebug = nullptr;
 }
 
 static Inspector* appid_inspector_ctor(Module* m)

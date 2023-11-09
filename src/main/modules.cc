@@ -358,7 +358,7 @@ public:
 private:
     string name;
     string text;
-    unsigned priority;
+    unsigned priority = 0;
 };
 
 bool ClassificationsModule::begin(const char*, int, SnortConfig*)
@@ -799,6 +799,9 @@ static const Parameter attribute_table_params[] =
     { "max_hosts", Parameter::PT_INT, "32:max53", "1024",
       "maximum number of hosts in attribute table" },
 
+    { "segments", Parameter::PT_INT, "1:32", "4",
+      "number of segments of hosts attribute table. It must be power of 2." },
+
     { "max_services_per_host", Parameter::PT_INT, "1:65535", "8",
       "maximum number of services per host entry in attribute table" },
 
@@ -830,6 +833,23 @@ bool AttributeTableModule::set(const char*, Value& v, SnortConfig* sc)
     else if ( v.is("max_hosts") )
         sc->max_attribute_hosts = v.get_uint32();
 
+    else if ( v.is("segments") )
+    {
+        auto segments = v.get_uint32();
+
+        if(segments > 32)
+            segments = 32;
+
+        if (segments == 0 || (segments & (segments - 1)) != 0)
+        {
+            uint8_t highestBitSet = 0;
+            while (segments >>= 1)
+                highestBitSet++;
+            segments = 1 << highestBitSet;
+            LogMessage("== WARNING: host attribute table segments count is not a power of 2. setting to %d\n", segments);
+        }
+        sc->segment_count_host = segments;
+    }
     else if ( v.is("max_services_per_host") )
         sc->max_attribute_services_per_host = v.get_uint16();
 
@@ -1182,8 +1202,8 @@ public:
     { return GLOBAL; }
 
 private:
-    int thread;
-    CpuSet* cpuset;
+    int thread = 0;
+    CpuSet* cpuset = nullptr;
     string type;
     string name;
 };
@@ -1349,7 +1369,7 @@ public:
     { return CONTEXT; }
 
 private:
-    THDX_STRUCT thdx;
+    THDX_STRUCT thdx = {};
 };
 
 bool SuppressModule::set(const char*, Value& v, SnortConfig*)
@@ -1468,7 +1488,7 @@ public:
     { return CONTEXT; }
 
 private:
-    THDX_STRUCT thdx;
+    THDX_STRUCT thdx = {};
 };
 
 bool EventFilterModule::set(const char*, Value& v, SnortConfig*)
@@ -1687,7 +1707,7 @@ class HostsModule : public Module
 {
 public:
     HostsModule() : Module("hosts", hosts_help, hosts_params, true)
-    { host = nullptr; }
+    { }
 
     ~HostsModule() override
     { assert(!host); }
@@ -1707,7 +1727,7 @@ public:
 
 private:
     HostServiceDescriptor service;
-    HostAttributesEntry host;
+    HostAttributesEntry host = nullptr;
 };
 
 bool HostsModule::set(const char*, Value& v, SnortConfig* sc)

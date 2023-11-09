@@ -1,3 +1,50 @@
+2023-11-07: 3.1.74.0
+
+* actions, detection, file_api, flow, stream: coverity fixes
+* appid: clean up main thread appid debug and make appid on, off, on work
+* appid: lua log function with appiddebug check
+* build: address miscellaneous cppcheck warnings
+* build: fix up 32-bit compilation
+* build: fix coverity and cppcheck issues
+* build: remove unused functions reported by cppcheck
+* codecs: fix bad checksum when auth(51) protocol header is present between IP and TCP layer.
+* dce_rpc: added SMB Redesigned Multichannel enabled code
+* http_inspect: add correct handling of configuration error
+* ips_options: fix ack option
+* ips_options: fix flow bits
+* packet_io: fix incorrect counters caused by data plane counters reset
+* search_tool: allow an override of the search method
+* search_tool: fall back to normal mpse if no snort config
+
+2023-10-23: 3.1.73.0
+
+* appid: added support for appid trace logs with multiple logging levels
+* appid: fixing cppcheck issue
+* control: code refactor to support all unix flavors
+* detection: fix cleaning of rule profiling stats when profiling starts
+* host_cache: added segmented cache
+* http_inspect: handle reserved gzip flags
+* http_inspect: response to 0.9 isn't necessarily 0.9
+* profiler: extend field length to support uint64
+* stream: skip duplicated alerts in TcpReassemblerState's list. Thanks wenhao-in-chengdu for reporting the issue and suggesting a fix.
+* stream_tcp: ignore normalization checks when in midstream state
+
+2023-10-10: 3.1.72.0
+
+* active: added API for printing delayed action string
+* appid: support to get correct http session based on stream_id
+* control: allow one command at a time
+* dce_rpc: using  reset_using_rpkt() inline to what is there in eval() of SMB inspector code as well
+* flow_cache: added protocol base LRU caches
+* helpers: increase buffer space for function names, allow printing truncated names
+* http_inspect: clear fake headers snapshot for 0.9 response
+* http_inspect: run detection on failed utf decoding
+* memory: change NOW type counts to SUM type, where necessary
+* packet_io: fix daq stats
+* stream_tcp: accept 1 byte of trimmed probe data after zero window
+* stream_tcp: update rcv_nxt appropriately for each segment
+* tcp: timeout for embryonic and idle session
+
 2023-09-25: 3.1.71.0
 
 * appid, http_inspect, http2_inspect: create appid session if not present in decrypt event handler, add message section as part of StreamFlowIntf for httpx
