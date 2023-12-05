@@ -26,11 +26,11 @@
 
 DirectoryList :: ~DirectoryList()
 {
-    std::unordered_map<char*, FileProperty*>::iterator it = oleentry.begin();
+    auto it = oleentry.begin();
 
     while (it != oleentry.end())
     {
-        FileProperty* node =  it->second;
+        FileProperty* node = *it;
         delete[] node->get_name();
         delete node;
         it = oleentry.erase(it);
@@ -86,12 +86,12 @@ void OleFile :: walk_directory_list()
             name_buf = new uint8_t[32];
 
             // The filename is UTF16 encoded and will be of the size 64 bytes.
-            dir_list->utf_state = new snort::UtfDecodeSession();
+            snort::UtfDecodeSession utf_state;
             if (!header->get_byte_order())
-                dir_list->utf_state->set_decode_utf_state_charset(CHARSET_UTF16LE);
+                utf_state.set_decode_utf_state_charset(CHARSET_UTF16LE);
             else
-                dir_list->utf_state->set_decode_utf_state_charset(CHARSET_UTF16BE);
-            dir_list->utf_state->decode_utf(buf, OLE_MAX_FILENAME_LEN_UTF16, name_buf,
+                utf_state.set_decode_utf_state_charset(CHARSET_UTF16BE);
+            utf_state.decode_utf(buf, OLE_MAX_FILENAME_LEN_UTF16, name_buf,
                 OLE_MAX_FILENAME_ASCII, &bytes_copied);
 
             node->set_name(name_buf);
@@ -119,6 +119,7 @@ void OleFile :: walk_directory_list()
 
             if (strcmp(file_name, ROOT_ENTRY) == 0)
                 dir_list->set_mini_stream_sector(node->get_starting_sector());
+
             object_type type = node->get_file_type();
             // check for all the empty/non valid entries in the directory list.
             if (!(type == ROOT_STORAGE or type == STORAGE or type == STREAM))
@@ -127,9 +128,8 @@ void OleFile :: walk_directory_list()
                 delete[] name_buf;
             }
             else
-                dir_list->oleentry.insert({ file_name, node });
+                dir_list->oleentry.emplace_back(node);
             count++;
-            delete dir_list->utf_state;
         }
         // Reading the next sector of current_sector by referring the FAT list array.
         // A negative number suggests the end of directory entry array and there are
@@ -146,13 +146,16 @@ void OleFile :: walk_directory_list()
 
 FileProperty* DirectoryList :: get_file_node(char* name)
 {
-    std::unordered_map<char*, FileProperty*>::iterator it;
+    auto it = std::find_if(oleentry.begin(), oleentry.end(),
+        [name](const auto& curr)
+        {
+            return !strcmp(curr->get_name(), name);
+        });
 
-    it = oleentry.find(name);
+    if (it == oleentry.end())
+        return nullptr;
 
-    if (it != oleentry.end())
-        return(it->second);
-    return nullptr;
+    return *it;
 }
 
 // Every index of fat_list array is the fat sector ID and the value present
@@ -272,9 +275,8 @@ uint32_t OleFile :: find_bytes_to_copy(uint32_t byte_offset, uint32_t data_len,
     return bytes_to_copy;
 }
 
-void OleFile :: get_file_data(char* file, uint8_t*& file_data, uint32_t& data_len)
+void OleFile :: get_file_data(FileProperty* node, uint8_t*& file_data, uint32_t& data_len)
 {
-    FileProperty* node = dir_list->get_file_node(file);
     data_len = 0;
 
     if (node)
@@ -561,14 +563,6 @@ int32_t cli_readn(const uint8_t*& fd, uint32_t& data_len, void* buff, int32_t co
 void OleFile :: decompression(const uint8_t* data, uint32_t& data_len, uint8_t*& local_vba_buffer,
     uint32_t& vba_buffer_offset)
 {
-    int16_t header;
-    bool flagCompressed;
-    unsigned char buffer[VBA_COMPRESSION_WINDOW]={ };
-    uint16_t token;
-    unsigned int pos, shift, mask, distance;
-    uint8_t flag;
-    bool clean;
-
     if (!data)
         return;
 
@@ -579,11 +573,11 @@ void OleFile :: decompression(const uint8_t* data, uint32_t& data_len, uint8_t*&
         return;
     }
 
-    header = LETOHS_UNALIGNED(data + 1);
+    int16_t data_header = LETOHS_UNALIGNED(data + 1);
 
-    flagCompressed = header & 0x8000;
+    bool flagCompressed = 0 != (data_header & 0x8000);
 
-    if (((header >> 12) & 0x07) != 0b011)
+    if (((data_header >> 12) & 0x07) != 0b011)
     {
         VBA_DEBUG(vba_data_trace, DEFAULT_TRACE_OPTION_ID, TRACE_INFO_LEVEL, CURRENT_PACKET,
             "Invalid Chunk signature.\n");
@@ -592,35 +586,35 @@ void OleFile :: decompression(const uint8_t* data, uint32_t& data_len, uint8_t*&
     data += 3;
     data_len -= 3;
 
+    unsigned char buffer[VBA_COMPRESSION_WINDOW]={ };
     if (flagCompressed == 0)
     {
         memcpy(&buffer, data, data_len);
         return;
     }
 
-    pos = 0;
-    clean = 1;
+    unsigned pos = 0;
+    bool clean = true;
     uint32_t size = data_len;
+    uint8_t flag;
     while (cli_readn(data, size, &flag, 1))
     {
-        for (mask = 1; mask < 0x100; mask <<= 1)
+        for (unsigned mask = 1; mask < 0x100; mask <<= 1)
         {
             unsigned int winpos = pos % VBA_COMPRESSION_WINDOW;
             if (flag & mask)
             {
-                uint16_t len;
-                uint32_t srcpos;
-
+                uint16_t token;
                 if (!cli_readn(data, size, &token, 2))
                     return;
 
-                shift    = 12 - (winpos > 0x10) - (winpos > 0x20) - (winpos > 0x40) - (winpos >
+                unsigned shift = 12 - (winpos > 0x10) - (winpos > 0x20) - (winpos > 0x40) - (winpos >
                     0x80) - (winpos > 0x100) - (winpos > 0x200) - (winpos > 0x400) - (winpos >
                     0x800);
-                len      = (uint16_t)((token & ((1 << shift) - 1)) + 3);
-                distance = token >> shift;
+                uint16_t len = (uint16_t)((token & ((1 << shift) - 1)) + 3);
+                unsigned distance = token >> shift;
 
-                srcpos = pos - distance - 1;
+                uint32_t srcpos = pos - distance - 1;
                 if ((((srcpos + len) % VBA_COMPRESSION_WINDOW) < winpos)and
                         ((winpos + len) < VBA_COMPRESSION_WINDOW) and
                         (((srcpos % VBA_COMPRESSION_WINDOW) + len) < VBA_COMPRESSION_WINDOW) and
@@ -642,17 +636,18 @@ void OleFile :: decompression(const uint8_t* data, uint32_t& data_len, uint8_t*&
             {
                 if ((pos != 0)and (winpos == 0) and clean)
                 {
+                    uint16_t token;
                     if (cli_readn(data, size, &token, 2) != 2)
                     {
                         return;
                     }
-                    clean = 0;
+                    clean = false;
                     break;
                 }
                 if (cli_readn(data, size,  &buffer[winpos], 1) == 1)
                     pos++;
             }
-            clean = 1;
+            clean = true;
         }
     }
 
@@ -669,19 +664,19 @@ void OleFile :: decompression(const uint8_t* data, uint32_t& data_len, uint8_t*&
 // Function to extract the VBA data and send it for RLE decompression.
 void OleFile :: find_and_extract_vba(uint8_t*& vba_buf, uint32_t& vba_buf_len)
 {
-    std::unordered_map<char*, FileProperty*>::iterator it = dir_list->oleentry.begin();
+    auto it = dir_list->oleentry.begin();
     uint32_t vba_buffer_offset = 0;
     vba_buf = new uint8_t[MAX_VBA_BUFFER_LEN + 1]();
 
     while (it != dir_list->oleentry.end())
     {
-        FileProperty* node = it->second;
+        FileProperty* node = *it;
         ++it;
         if (node->get_file_type() == STREAM)
         {
             uint8_t* data = nullptr;
             uint32_t data_len;
-            get_file_data(node->get_name(), data, data_len);
+            get_file_data(node, data, data_len);
             uint8_t* data1 = data;
             int32_t offset = get_file_offset(data, data_len);
             if (offset <= 0)

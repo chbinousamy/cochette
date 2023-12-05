@@ -58,7 +58,7 @@ public:
 
     unsigned prune_idle(uint32_t thetime, const snort::Flow* save_me);
     unsigned prune_excess(const snort::Flow* save_me);
-    bool prune_one(PruneReason, bool do_cleanup);
+    bool prune_one(PruneReason, bool do_cleanup, uint8_t type = 0);
     unsigned timeout(unsigned num_flows, time_t cur_time);
     unsigned delete_flows(unsigned num_to_delete);
     unsigned prune_multiple(PruneReason, bool do_cleanup);
@@ -74,6 +74,9 @@ public:
 
     PegCount get_prunes(PruneReason reason) const
     { return prune_stats.get(reason); }
+
+    PegCount get_proto_prune_count(PruneReason reason, PktType type) const
+    { return prune_stats.get_proto_prune_count(reason,type); }
 
     PegCount get_total_deletes() const
     { return delete_stats.get_total(); }

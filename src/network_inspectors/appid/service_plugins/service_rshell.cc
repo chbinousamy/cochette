@@ -129,10 +129,10 @@ int RshellServiceDetector::validate(AppIdDiscoveryArgs& args)
         rd->state = RSHELL_STATE_PORT;
     }
 
-    if (appidDebug->is_active())
-        LogMessage("AppIdDbg %s RSHELL state %d\n", appidDebug->get_debug_session(), rd->state);
+    // cppcheck-suppress nullPointerRedundantCheck
+    appid_log(args.pkt, TRACE_DEBUG_LEVEL, "RSHELL state %d\n",rd->state);
 
-    switch (rd->state)
+    switch (rd->state) // cppcheck-suppress nullPointerRedundantCheck
     {
     case RSHELL_STATE_PORT:
         if (args.dir != APP_ID_FROM_INITIATOR)

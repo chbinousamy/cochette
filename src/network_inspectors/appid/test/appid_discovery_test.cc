@@ -80,11 +80,8 @@ void Module::reset_stats() {}
 PegCount Module::get_global_count(char const*) const { return 0; }
 
 // Stubs for logs
-void LogMessage(const char*,...) {}
-void ErrorMessage(const char*,...) {}
 void LogLabel(const char*, FILE*) {}
 void LogText(const char*, FILE*) {}
-
 
 // Stubs for utils
 char* snort_strdup(const char* str)
@@ -102,7 +99,7 @@ char* snort_strndup(const char* src, size_t)
 time_t packet_time() { return std::time(nullptr); }
 
 // Stubs for search_tool
-SearchTool::SearchTool(bool) {}
+SearchTool::SearchTool(bool, const char*) {}
 SearchTool::~SearchTool() = default;
 void SearchTool::add(const char*, unsigned, int, bool, bool) {}
 void SearchTool::add(const char*, unsigned, void*, bool, bool) {}
@@ -172,7 +169,8 @@ bool AppIdModule::set(char const*, Value&, SnortConfig*) { return true; }
 const Command* AppIdModule::get_commands() const { return nullptr; }
 const PegInfo* AppIdModule::get_pegs() const { return nullptr; }
 PegCount* AppIdModule::get_counts() const { return nullptr; }
-ProfileStats* AppIdModule::get_profile() const { return nullptr; }
+ProfileStats* AppIdModule::get_profile(
+        unsigned i, const char*& name, const char*& parent) const { return nullptr; }
 void AppIdModule::set_trace(const Trace*) const { }
 const TraceOption* AppIdModule::get_trace_options() const { return nullptr; }
 THREAD_LOCAL bool ThirdPartyAppIdContext::tp_reload_in_progress = false;
@@ -304,6 +302,8 @@ TPLibHandler* TPLibHandler::self = nullptr;
 THREAD_LOCAL AppIdStats appid_stats;
 THREAD_LOCAL AppIdDebug* appidDebug = nullptr;
 void AppIdDebug::activate(const Flow*, const AppIdSession*, bool) { active = false; }
+
+void appid_log(const snort::Packet*, unsigned char, char const*, ...) { }
 
 bool AppIdReloadTuner::tinit() { return false; }
 

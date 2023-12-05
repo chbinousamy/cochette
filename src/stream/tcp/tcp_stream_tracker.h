@@ -331,6 +331,7 @@ public:
     bool client_tracker;
     bool require_3whs = false;
     bool rst_pkt_sent = false;
+    bool ooo_packet_seen = false;
 
 // FIXIT-L make these non-public
 public:
@@ -340,7 +341,7 @@ public:
 
     uint32_t r_win_base = 0; // remote side window base sequence number (the last ack we got)
     uint32_t small_seg_count = 0;
-    uint32_t max_queue_seq_nxt; // next expected sequence once queue limit is exceeded
+    uint32_t max_queue_seq_nxt = 0; // next expected sequence once queue limit is exceeded
     uint8_t max_queue_exceeded = MQ_NONE;
     uint8_t order = 0;
     FinSeqNumStatus fin_seq_status = TcpStreamTracker::FIN_NOT_SEEN;

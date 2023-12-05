@@ -197,8 +197,8 @@ private:
 class DirectoryList
 {
 public:
-    std::unordered_map<char*, FileProperty*> oleentry;
-    snort::UtfDecodeSession* utf_state;
+    std::list<FileProperty*> oleentry;
+    snort::UtfDecodeSession* utf_state = nullptr;
 
     bool is_file_exists(char* name);
     FileProperty* get_file_node(char* name);
@@ -214,16 +214,12 @@ public:
         return mini_stream_sector;
     }
 
-    DirectoryList()
-    {
-        utf_state = nullptr;
-        mini_stream_sector = -1;
-    }
+    DirectoryList() = default;
 
     ~DirectoryList();
 
 private:
-    int32_t mini_stream_sector;
+    int32_t mini_stream_sector = -1;
 };
 
 class OleFile
@@ -239,7 +235,6 @@ public:
     int32_t get_fat_offset(int32_t sec_id);
     int32_t get_mini_fat_offset(int32_t sec_id);
     int32_t get_file_offset(const uint8_t*, uint32_t data_len);
-    void get_file_data(char*, uint8_t*&, uint32_t&);
 
     void decompression(const uint8_t* data, uint32_t& data_len, uint8_t*& buffer,
         uint32_t& buffer_ofset);
@@ -265,7 +260,9 @@ public:
         delete[] mini_fat_list;
     }
 
+
 private:
+    void get_file_data(FileProperty*, uint8_t*&, uint32_t&);
     const uint8_t* file_buf;
     uint32_t buf_len;
 

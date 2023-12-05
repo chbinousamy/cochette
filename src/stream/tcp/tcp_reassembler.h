@@ -44,7 +44,7 @@ public:
         TcpReassemblerState&, snort::Flow* flow, bool clear, const snort::Packet* = nullptr);
     void finish_and_final_flush(
         TcpReassemblerState&, snort::Flow* flow, bool clear, snort::Packet*);
-    virtual bool is_segment_pending_flush(TcpReassemblerState&);
+    virtual bool is_segment_pending_flush(const TcpReassemblerState&) const;
     virtual int flush_on_data_policy(TcpReassemblerState&, snort::Packet*);
     virtual int flush_on_ack_policy(TcpReassemblerState&, snort::Packet*);
     virtual bool add_alert(TcpReassemblerState&, uint32_t gid, uint32_t sid);
@@ -68,7 +68,7 @@ protected:
     int delete_reassembly_segment(TcpReassemblerState&, TcpSegmentNode*) override;
     virtual void insert_segment_in_empty_seglist(TcpReassemblerState&, TcpSegmentDescriptor&);
     virtual void insert_segment_in_seglist(TcpReassemblerState&, TcpSegmentDescriptor&);
-    virtual uint32_t get_pending_segment_count(TcpReassemblerState&, unsigned max);
+    virtual uint32_t get_pending_segment_count(const TcpReassemblerState&, unsigned max) const;
     int trim_delete_reassembly_segment(TcpReassemblerState&, TcpSegmentNode*, uint32_t flush_seq);
     void queue_reassembly_segment(TcpReassemblerState&, TcpSegmentNode* prev, TcpSegmentNode*);
     void init_overlap_editor(TcpReassemblerState&, TcpSegmentDescriptor&);
@@ -101,6 +101,7 @@ protected:
     void update_next(TcpReassemblerState&, const TcpSegmentNode&);
     void update_skipped_bytes(uint32_t, TcpReassemblerState&);
     void check_first_segment_hole(TcpReassemblerState&);
+    void update_rcv_nxt(TcpReassemblerState&, TcpSegmentNode&);
     bool has_seglist_hole(TcpReassemblerState&, TcpSegmentNode&, PAF_State&, uint32_t& total,
         uint32_t& flags);
     void skip_seglist_hole(TcpReassemblerState&, snort::Packet*, uint32_t flags,

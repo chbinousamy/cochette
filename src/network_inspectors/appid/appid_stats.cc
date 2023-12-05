@@ -106,7 +106,7 @@ void AppIdStatistics::dump_statistics()
     {
         if ( bucket->app_record_cnt )
         {
-            for (auto it : bucket->apps_tree)
+            for (auto& it : bucket->apps_tree)
             {
                 struct AppIdStatRecord& record = it.second;
 
@@ -120,21 +120,13 @@ void AppIdStatistics::dump_statistics()
 }
 
 AppIdStatistics::AppIdStatistics(const AppIdConfig& config)
+    : bucket_interval(config.app_stats_period), roll_size(config.app_stats_rollover_size)
 {
-    enabled = true;
-
-    roll_size = config.app_stats_rollover_size;
-    bucket_interval = config.app_stats_period;
-
-    time_t now = get_time();
-    start_stats_period(now);
+    start_stats_period(get_time());
 }
 
 AppIdStatistics::~AppIdStatistics()
 {
-    if ( !enabled )
-        return;
-
     /*flush the last stats period. */
     end_stats_period();
     dump_statistics();
@@ -266,9 +258,6 @@ void AppIdStatistics::update(const AppIdSession& asd)
 
 void AppIdStatistics::flush()
 {
-    if ( !enabled )
-        return;
-
     time_t now = get_time();
     if (now >= bucket_end)
     {
@@ -277,4 +266,3 @@ void AppIdStatistics::flush()
         start_stats_period(now);
     }
 }
-

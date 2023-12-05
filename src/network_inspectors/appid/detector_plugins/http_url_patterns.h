@@ -26,10 +26,11 @@
 #include <vector>
 
 #include "flow/flow.h"
-#include "log/messages.h"
 #include "search_engines/search_tool.h"
+#include "trace/trace.h"
 #include "utils/util.h"
 
+#include "appid_debug.h"
 #include "appid_types.h"
 #include "appid_utils/sf_mlmp.h"
 #include "application_ids.h"
@@ -101,13 +102,13 @@ struct DetectorHTTPPattern
     {
         if( !pat )
         {
-            snort::ErrorMessage("HTTP pattern string is null.");
+            appid_log(nullptr, TRACE_ERROR_LEVEL, "HTTP pattern string is null.");
             return false;
         }
 
         if (seq < SINGLE || seq > USER_AGENT_HEADER)
         {
-            snort::ErrorMessage("Invalid HTTP DHP Sequence.");
+            appid_log(nullptr, TRACE_ERROR_LEVEL, "Invalid HTTP DHP Sequence.");
             return false;
         }
 
@@ -122,13 +123,13 @@ struct DetectorHTTPPattern
         return true;
     }
 
-    DHPSequence sequence;
-    AppId service_id;
-    AppId client_id;
-    AppId payload_id;
-    AppId app_id;
-    unsigned pattern_size;
-    const uint8_t* pattern;
+    DHPSequence sequence = SINGLE;
+    AppId service_id = 0;
+    AppId client_id = 0;
+    AppId payload_id = 0;
+    AppId app_id = 0;
+    unsigned pattern_size = 0;
+    const uint8_t* pattern = nullptr;
 };
 typedef std::vector<DetectorHTTPPattern> DetectorHTTPPatterns;
 

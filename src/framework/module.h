@@ -66,6 +66,8 @@ struct Command
     LuaCFunction func;
     const Parameter* params;
     const char* help;
+    // the flag determines if the command is allowed to run in parallel with other control commands
+    bool can_run_in_parallel = false;
 
     std::string get_arg_list() const;
 };
@@ -204,20 +206,9 @@ protected:
 
     bool dump_stats_initialized = false;
 
-private:
-    friend ModuleManager;
-    void init(const char*, const char* = nullptr);
-
     std::vector<PegCount> counts;
     std::vector<PegCount> dump_stats_counts;
     int num_counts = -1;
-
-    const char* name;
-    const char* help;
-
-    const Parameter* params;
-    bool list;
-    int table_level = 0;
 
     void set_peg_count(int index, PegCount value, bool dump_stats = false)
     {
@@ -227,6 +218,26 @@ private:
         else
             counts[index] = value;
     }
+
+    void add_peg_count(int index, PegCount value, bool dump_stats = false)
+    {
+        assert(index < num_counts);
+        if(dump_stats)
+            dump_stats_counts[index] += value;
+        else
+            counts[index] += value;
+    }
+
+private:
+    friend ModuleManager;
+    void init(const char*, const char* = nullptr);
+
+    const char* name;
+    const char* help;
+
+    const Parameter* params;
+    bool list;
+    int table_level = 0;
 
     void set_max_peg_count(int index, PegCount value, bool dump_stats = false)
     {
@@ -241,16 +252,6 @@ private:
             if(value > counts[index])
                 counts[index] = value;
         }
-    }
-
-    void add_peg_count(int index, PegCount value, bool dump_stats = false)
-    {
-        assert(index < num_counts);
-        if(dump_stats)
-            dump_stats_counts[index] += value;
-        else
-            counts[index] += value;
-
     }
 };
 }
