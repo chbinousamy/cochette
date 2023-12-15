@@ -2,9 +2,9 @@ name: Chain Build Tests Demo
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "porcupino" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "porcupino" ]
 
 jobs:
   build-chain:
